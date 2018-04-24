@@ -1,0 +1,7 @@
+lab/
+
+*.egg-info
+
+__pycache__
+
+conf-*
