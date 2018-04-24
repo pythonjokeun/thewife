@@ -18,6 +18,8 @@
 
 ## Usage
 
+This bot only works on **Python 3**.
+
 1. Setup a `.yaml` configuration file, for example `my-config-file.yaml`.
 
 2. Simply run `wife --config my-config-file.yaml`, where `my-config-file.yaml` is the configuration file that you've setup from the first step.

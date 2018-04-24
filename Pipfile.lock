@@ -108,10 +108,10 @@
         },
         "ccxt": {
             "hashes": [
-                "sha256:77eaf0a4c33c2f4161307ed95516c577a1851a29f2648497ad06dc2264e7571a",
-                "sha256:a834c0034741864482af21b5e5d0753c887cde272a096f713db1f19f737e21cc"
+                "sha256:74b775a95862ff6943fe3e1f02583f15f3bd5477b8443919de9a7b4e95a708d5",
+                "sha256:af5a001ed51983f5e063670a917162276de302b079d7c2947951021fcd34449d"
             ],
-            "version": "==1.13.32"
+            "version": "==1.13.36"
         },
         "certifi": {
             "hashes": [
@@ -622,6 +622,7 @@
                 "sha256:f00d067a08836c03646ace00baaf59697e978d2f1958b090c3a098c59221e175",
                 "sha256:f96d8bd39ee85cb9e842e3c7ad8c7cfb875bebfe07d63e87ca3e3984cb2f1546"
             ],
+            "markers": "python_version >= '3.5.3'",
             "version": "==1.1.0"
         }
     },
