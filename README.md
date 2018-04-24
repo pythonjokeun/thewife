@@ -49,9 +49,9 @@ Fields surrounded with quotes (`'...'`) are expecting string as input, and witho
 
 Since this bot uses [ccxt](https://github.com/ccxt/ccxt) to interact with exchanges' APIs, some of the configuration values for this bot are inherited from [ccxt](https://github.com/ccxt/ccxt) configuration values. For possible values for all of these fields below, refer to the linked page.
 
-- [exchange](https://github.com/ccxt/ccxt/wiki/Manual#exchanges), contains name of the trading exchange (e.g 'binance').
-- [pair](https://github.com/ccxt/ccxt/wiki/Manual#symbols-and-market-ids), contains name of trading pair (e.g 'BTC/USDT').
-- [candlestick](https://github.com/ccxt/ccxt/wiki/Manual#ohlcv-candlestick-charts), contains size of the candlestick (e.g '1h').
+- [exchange](https://github.com/ccxt/ccxt/wiki/Manual#exchanges), contains name of the trading exchange (e.g binance).
+- [pair](https://github.com/ccxt/ccxt/wiki/Manual#symbols-and-market-ids), contains name of trading pair (e.g BTC/USDT).
+- [candlestick](https://github.com/ccxt/ccxt/wiki/Manual#ohlcv-candlestick-charts), contains size of the candlestick (e.g 1h).
 - [history](https://github.com/ccxt/ccxt/wiki/Manual#ohlcv-candlestick-charts), contains candlestick history size (e.g 100).
 
 The rest of configuration fields are explained below.
