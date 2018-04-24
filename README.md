@@ -60,7 +60,7 @@ The rest of configuration fields are explained below.
 
 Notice that, [pushbullet](https://www.pushbullet.com/) API access token is mandatory at the moment, so any buy / sell activity won't out of your sight.
 
-## Tested exchange
+## Tested Exchange
 
 - [x] Binance
 
