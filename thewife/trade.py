@@ -4,6 +4,7 @@ import attr
 from logzero import logger
 from time import sleep
 from tenacity import retry, wait_fixed
+from notifiers import get_notifier
 
 
 @attr.s
@@ -14,12 +15,25 @@ class Trade:
     pair = attr.ib()
     funds = attr.ib()
     refreshrate = attr.ib()
+    pbtoken = attr.ib()
+
+    def __attrs_post_init__(self):
+        self.__pushbullet = get_notifier('pushbullet')
 
     @property
     @retry(wait=wait_fixed(5))
-    def __price(self):
-        price = getattr(ccxt, self.exchange)().fetch_ticker(self.pair)['last']
-        return price
+    def __sell_price(self):
+        auth = getattr(ccxt, self.exchange)()
+        return auth.fetch_order_book(self.pair)['bids'][0][0]
+
+    @property
+    @retry(wait=wait_fixed(5))
+    def __buy_price(self):
+        auth = getattr(ccxt, self.exchange)()
+        return auth.fetch_order_book(self.pair)['asks'][0][0]
+
+    def __notify(self, message):
+        return self.__pushbullet.notify(message=message, token=self.pbtoken)
 
     def buy(self):
         try:
@@ -31,7 +45,7 @@ class Trade:
             market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
-            price = self.__price
+            price = self.__buy_price
 
             def amount(x):
                 if x <= 0:
@@ -47,6 +61,9 @@ class Trade:
             try:
                 logger.info('Attempt to buy ' + target + ' @ ' +
                             '{0:.8f}'.format(price) + ' ' + base)
+
+                self.__notify('Attempt to BUY ' + target + ' @ ' +
+                              '{0:.8f}'.format(price) + ' ' + base)
 
                 left = self.funds
                 order = auth.create_limit_buy_order(self.pair,
@@ -71,10 +88,14 @@ class Trade:
                             id=order_status['id'],
                             symbol=order_status['symbol'])
 
-                        price = self.__price
+                        price = self.__buy_price
 
                         logger.info('Attempt to buy ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
+
+                        self.__notify('Attempt to BUY ' + target + ' @ ' +
+                                      '{0:.8f}'.format(price) + ' ' + base)
+
                         order = auth.create_limit_buy_order(
                             order_status['symbol'], amount(left), price)
                     elif (remaining == 0.0 or remaining == 0):
@@ -99,7 +120,7 @@ class Trade:
             market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
-            price = self.__price
+            price = self.__sell_price
 
             def balance():
                 bal = auth.fetch_free_balance()
@@ -108,6 +129,10 @@ class Trade:
             try:
                 logger.info('Attempt to sell ' + target + ' @ ' +
                             '{0:.8f}'.format(price) + ' ' + base)
+
+                self.__notify('Attempt to SELL ' + target + ' @ ' +
+                              '{0:.8f}'.format(price) + ' ' + base)
+
                 order = auth.create_limit_sell_order(self.pair, balance(),
                                                      price)
 
@@ -127,10 +152,14 @@ class Trade:
                         logger.info('Cancel previous sell order')
                         auth.cancel_order(id=order_id, symbol=self.pair)
 
-                        price = self.__price
+                        price = self.__sell_price
 
                         logger.info('Attempt to sell ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
+
+                        self.__notify('Attempt to SELL ' + target + ' @ ' +
+                                      '{0:.8f}'.format(price) + ' ' + base)
+
                         order = auth.create_limit_sell_order(
                             self.pair, balance(), price)
                     elif remaining == 0.0 or remaining == 0:

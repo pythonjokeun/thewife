@@ -6,7 +6,6 @@ from yaml import load
 from argparse import ArgumentParser
 from pyfiglet import Figlet
 from logzero import logger
-from notifiers import get_notifier
 
 
 def main():
@@ -49,10 +48,6 @@ def main():
         with open(confloc) as f:
             conf = load(f)
 
-        pushbullet = get_notifier('pushbullet')
-        base = conf['trade']['pair'].split('/')[1]
-        target = conf['trade']['pair'].split('/')[0]
-
         while True:
             indicator = Indicator(
                 exchange=conf['creds']['account']['exchange'],
@@ -67,7 +62,8 @@ def main():
                 apisec=conf['creds']['account']['apisec'],
                 pair=conf['trade']['pair'],
                 funds=conf['trade']['funds'],
-                refreshrate=conf['trade']['ordercheck'])
+                refreshrate=conf['trade']['ordercheck'],
+                pbtoken=conf['creds']['pushbullet']['token'])
 
             last_act = 'sell'
             count = 1
@@ -90,30 +86,15 @@ def main():
                 if count == 1 and (float(current_indicator) <=
                                    indicator.setting['parameter']['lower']):
                     last_act = 'buy'
-                    message = ('Attempt to BUY ' + target + ' @ ' +
-                               current_price + ' ' + base)
-                    pushbullet.notify(
-                        message=message,
-                        token=conf['creds']['pushbullet']['token'])
                     trade.buy()
                     count += 1
                 # regular buy
                 elif last_act == 'sell' and current_signal == 'buy':
                     last_act = 'buy'
-                    message = ('Attempt to BUY ' + target + ' @ ' +
-                               current_price + ' ' + base)
-                    pushbullet.notify(
-                        message=message,
-                        token=conf['creds']['pushbullet']['token'])
                     trade.buy()
                     count += 1
                 # regular sell
                 elif last_act == 'buy' and current_signal == 'sell':
-                    message = ('Attempt to SELL ' + target + ' @ ' +
-                               current_price + ' ' + base)
-                    pushbullet.notify(
-                        message=message,
-                        token=conf['creds']['pushbullet']['token'])
                     trade.sell()
                     break
                 else:
