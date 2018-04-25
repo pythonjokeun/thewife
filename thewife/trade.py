@@ -17,9 +17,15 @@ class Trade:
 
     @property
     @retry(wait=wait_fixed(5))
-    def __price(self):
-        price = getattr(ccxt, self.exchange)().fetch_ticker(self.pair)['last']
-        return price
+    def __sell_price(self):
+        auth = getattr(ccxt, self.exchange)()
+        return auth.fetch_order_book(self.pair)['bids'][0][0]
+
+    @property
+    @retry(wait=wait_fixed(5))
+    def __buy_price(self):
+        auth = getattr(ccxt, self.exchange)()
+        return auth.fetch_order_book(self.pair)['asks'][0][0]
 
     def buy(self):
         try:
@@ -31,7 +37,7 @@ class Trade:
             market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
-            price = self.__price
+            price = self.__buy_price
 
             def amount(x):
                 if x <= 0:
@@ -71,7 +77,7 @@ class Trade:
                             id=order_status['id'],
                             symbol=order_status['symbol'])
 
-                        price = self.__price
+                        price = self.__buy_price
 
                         logger.info('Attempt to buy ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
@@ -99,7 +105,7 @@ class Trade:
             market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
-            price = self.__price
+            price = self.__sell_price
 
             def balance():
                 bal = auth.fetch_free_balance()
@@ -127,7 +133,7 @@ class Trade:
                         logger.info('Cancel previous sell order')
                         auth.cancel_order(id=order_id, symbol=self.pair)
 
-                        price = self.__price
+                        price = self.__sell_price
 
                         logger.info('Attempt to sell ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
