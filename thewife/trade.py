@@ -45,7 +45,6 @@ class Trade:
             market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
-            price = self.__buy_price
 
             def amount(x):
                 if x <= 0:
@@ -57,6 +56,8 @@ class Trade:
                     self.pair, amount_target)
 
                 return amount_target
+
+            price = self.__buy_price
 
             try:
                 logger.info('Attempt to buy ' + target + ' @ ' +
@@ -100,6 +101,8 @@ class Trade:
                             order_status['symbol'], amount(left), price)
                     elif (remaining == 0.0 or remaining == 0):
                         logger.info('Successfully bought ' + target)
+                        self.__notify('Successfully bought ' + target + ' @ ' +
+                                      '{0:.8f}'.format(price) + ' ' + base)
                         break
 
                     sleep(self.refreshrate)
@@ -120,11 +123,12 @@ class Trade:
             market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
-            price = self.__sell_price
 
             def balance():
                 bal = auth.fetch_free_balance()
                 return auth.amount_to_precision(self.pair, bal[target])
+
+            price = self.__sell_price
 
             try:
                 logger.info('Attempt to sell ' + target + ' @ ' +
@@ -164,6 +168,8 @@ class Trade:
                             self.pair, balance(), price)
                     elif remaining == 0.0 or remaining == 0:
                         logger.info('Successfully sold ' + target)
+                        self.__notify('Successfully sold ' + target + ' @ ' +
+                                      '{0:.8f}'.format(price) + ' ' + base)
                         break
 
                     sleep(self.refreshrate)
