@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='thewife',
-    version='0.2',
+    version='0.2.1',
     description='Trading bot that reacts to optimized indicator',
     packages=['thewife'],
     install_requires=[
