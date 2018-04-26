@@ -45,10 +45,10 @@ def main():
 
         confloc = args.config
 
-        with open(confloc) as f:
-            conf = load(f)
-
         while True:
+            with open(confloc) as f:
+                conf = load(f)
+
             indicator = Indicator(
                 exchange=conf['creds']['account']['exchange'],
                 pair=conf['trade']['pair'],
