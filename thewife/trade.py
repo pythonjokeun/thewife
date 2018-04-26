@@ -94,9 +94,6 @@ class Trade:
                         logger.info('Attempt to buy ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
 
-                        self.__notify('Attempt to BUY ' + target + ' @ ' +
-                                      '{0:.8f}'.format(price) + ' ' + base)
-
                         order = auth.create_limit_buy_order(
                             order_status['symbol'], amount(left), price)
                     elif (remaining == 0.0 or remaining == 0):
@@ -160,9 +157,6 @@ class Trade:
 
                         logger.info('Attempt to sell ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
-
-                        self.__notify('Attempt to SELL ' + target + ' @ ' +
-                                      '{0:.8f}'.format(price) + ' ' + base)
 
                         order = auth.create_limit_sell_order(
                             self.pair, balance(), price)
