@@ -73,10 +73,13 @@ class Indicator:
 
             indicator = rsi(ohlcv_copy.close, int(period))
             ohlcv_copy.loc[:, 'indicator'] = indicator
+            ohlcv_copy.loc[:, 'previndicator'] = ohlcv_copy.indicator.shift(1)
 
             signal = numpy.where(
-                ohlcv_copy.indicator <= float(lower), 'buy',
-                numpy.where(ohlcv_copy.indicator >= float(upper), 'sell',
+                (ohlcv_copy.indicator >= lower) &
+                (ohlcv_copy.previndicator < lower), 'buy',
+                numpy.where((ohlcv_copy.indicator <= upper) &
+                            (ohlcv_copy.previndicator > upper), 'sell',
                             'hold'))
 
             lastsignal = 'hold'
