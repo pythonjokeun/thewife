@@ -40,6 +40,8 @@ class Trade:
             auth = getattr(ccxt, self.exchange)()
             auth.apiKey = self.apikey
             auth.secret = self.apisec
+            auth.adjustForTimeDifference = True
+            auth.recvWindow = 10000000
 
             market = auth.load_markets()
             market = market[self.pair]
@@ -115,6 +117,8 @@ class Trade:
             auth = getattr(ccxt, self.exchange)()
             auth.apiKey = self.apikey
             auth.secret = self.apisec
+            auth.adjustForTimeDifference = True
+            auth.recvWindow = 10000000
 
             market = auth.load_markets()
             market = market[self.pair]
