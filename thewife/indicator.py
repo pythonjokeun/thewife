@@ -67,32 +67,13 @@ class Indicator:
         except Exception as e:
             logger.exception(e)
 
-    def __compute_signal(self, period, lower, upper):
+    def __compute_indicator(self, period, lower, upper):
         try:
-            ohlcv_copy = self.ohlcv.copy()
+            data = self.ohlcv.copy()
+            indicator = rsi(data.close, int(period))
+            data.loc[:, 'indicator'] = indicator
 
-            indicator = rsi(ohlcv_copy.close, int(period))
-            ohlcv_copy.loc[:, 'indicator'] = indicator
-
-            signal = numpy.where(ohlcv_copy.indicator <= lower, 'buy',
-                                 numpy.where(ohlcv_copy.indicator >= upper,
-                                             'sell', 'hold'))
-
-            lastsignal = 'hold'
-
-            for i in range(len(signal)):
-                if signal[i] == 'buy' and lastsignal != 'buy':
-                    signal[i] = 'buy'
-                    lastsignal = 'buy'
-                elif signal[i] == 'sell' and lastsignal != 'sell':
-                    signal[i] = 'sell'
-                    lastsignal = 'sell'
-                else:
-                    signal[i] = 'hold'
-
-            ohlcv_copy.loc[:, 'signal'] = signal
-
-            return ohlcv_copy
+            return data
         except Exception as e:
             logger.exception(e)
 
@@ -109,7 +90,29 @@ class Indicator:
                 else:
                     pass
 
-                data = self.__compute_signal(**params)
+                data = self.__compute_indicator(
+                    period=params['period'],
+                    lower=params['lower'],
+                    upper=params['upper'])
+
+                signal = numpy.where(
+                    data.indicator <= params['lower'], 'buy',
+                    numpy.where(data.indicator >= params['upper'], 'sell',
+                                'hold'))
+
+                lastsignal = 'hold'
+
+                for i in range(len(signal)):
+                    if signal[i] == 'buy' and lastsignal != 'buy':
+                        signal[i] = 'buy'
+                        lastsignal = 'buy'
+                    elif signal[i] == 'sell' and lastsignal != 'sell':
+                        signal[i] = 'sell'
+                        lastsignal = 'sell'
+                    else:
+                        signal[i] = 'hold'
+
+                data.loc[:, 'signal'] = signal
                 data = data.loc[:, ['close', 'signal']]
 
                 # filter only rows that contain buy or sell signal
@@ -176,12 +179,12 @@ class Indicator:
             logger.exception(e)
 
     @property
-    def signal(self):
+    def indicator(self):
         # refresh candlestick
         self.ohlcv = self.__fetch_ohlcv()
 
         # compute signal with best parameter
-        data = self.__compute_signal(
+        data = self.__compute_indicator(
             period=self.setting['parameter']['period'],
             lower=self.setting['parameter']['lower'],
             upper=self.setting['parameter']['upper'])

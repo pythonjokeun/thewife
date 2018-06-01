@@ -9,7 +9,6 @@ def wait(amount):
     if 'h' in amount:
         waittime = int(amount.replace('h', ''))
         nexttime = datetime.now() + timedelta(hours=waittime)
-        logger.info('Next run at: ' + nexttime.strftime('%H:%M:%S'))
 
         while True:
             now = datetime.now()
@@ -28,7 +27,6 @@ def wait(amount):
             now = datetime.now()
             if (now.minute % waittime) == 0 and now.second == 1:
                 nexttime = now + timedelta(minutes=waittime)
-                logger.info('Next run at: ' + nexttime.strftime('%H:%M:%S'))
                 break
 
             sleep(1)

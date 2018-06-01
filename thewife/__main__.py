@@ -66,39 +66,29 @@ def main():
                 pbtoken=conf['creds']['pushbullet']['token'])
 
             last_act = 'sell'
-            count = 1
+            parameter = indicator.setting['parameter']
 
             while True:
                 wait(conf['trade']['candlestick'])
 
-                candle = indicator.signal
-                current_signal = candle.signal.tolist()[-1]
-                current_indicator = candle.indicator.tolist()[-1]
-                current_indicator = '{0:.2f}'.format(current_indicator)
-                current_price = candle.close.tolist()[-1]
-                current_price = '{0:.8f}'.format(current_price)
+                data = indicator.indicator
+                current_indicator = data.indicator.tolist()[-1]
 
-                logger.info('Current price: ' + current_price)
-                logger.info('Current indicator: ' + current_indicator)
-                logger.info('Current signal: ' + current_signal.capitalize())
+                logger.info('Current price: ' +
+                            '{0:.8f}'.format(data.close.tolist()[-1]))
+                logger.info('Current indicator: ' +
+                            '{0:.2f}'.format(current_indicator))
 
-                # buy when lower threshold passed on bot start
-                if count == 1 and (float(current_indicator) <=
-                                   indicator.setting['parameter']['lower']):
+                if last_act == 'sell' and (current_indicator <=
+                                           parameter['lower']):
                     last_act = 'buy'
                     trade.buy()
-                    count += 1
-                # regular buy
-                elif last_act == 'sell' and current_signal == 'buy':
-                    last_act = 'buy'
-                    trade.buy()
-                    count += 1
-                # regular sell
-                elif last_act == 'buy' and current_signal == 'sell':
+                elif last_act == 'buy' and (current_indicator >=
+                                            parameter['upper']):
                     trade.sell()
                     break
                 else:
-                    count += 1
+                    pass
     except KeyboardInterrupt:
         quit()
 
