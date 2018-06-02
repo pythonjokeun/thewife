@@ -4,7 +4,7 @@ import numpy
 
 from pandas import DataFrame as df
 from datetime import datetime as dt
-from pyti.relative_strength_index import relative_strength_index as rsi
+from pyti.money_flow_index import money_flow_index as mfi
 from hyperopt import fmin, hp, tpe, Trials, STATUS_OK, space_eval
 from pandas import set_option
 from logzero import logger
@@ -28,8 +28,8 @@ class Indicator:
 
         possible_setting = {
             'period': range(2, 15),
-            'lower': range(0, 50),
-            'upper': range(51, 100)
+            'lower': range(2, 51),
+            'upper': range(51, 101)
         }
 
         self.setting = self.__optimize_signal(possible_setting)
@@ -72,7 +72,8 @@ class Indicator:
     def __compute_indicator(self, period, lower, upper):
         try:
             data = self.ohlcv.copy()
-            indicator = rsi(data.close, int(period))
+            indicator = mfi(data.close, data.high, data.low, data.volume,
+                            int(period))
             data.loc[:, 'indicator'] = indicator
 
             return data
@@ -162,7 +163,7 @@ class Indicator:
                 f,
                 possibilities,
                 algo=tpe.suggest,
-                max_evals=1000,
+                max_evals=250,
                 trials=trials)
 
             params = space_eval(possibilities, hyperopt_result)
