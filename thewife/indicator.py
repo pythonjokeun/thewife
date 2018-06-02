@@ -163,7 +163,7 @@ class Indicator:
                 f,
                 possibilities,
                 algo=tpe.suggest,
-                max_evals=250,
+                max_evals=500,
                 trials=trials)
 
             params = space_eval(possibilities, hyperopt_result)
