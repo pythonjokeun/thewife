@@ -8,6 +8,7 @@ from pyti.relative_strength_index import relative_strength_index as rsi
 from hyperopt import fmin, hp, tpe, Trials, STATUS_OK, space_eval
 from pandas import set_option
 from logzero import logger
+from tenacity import retry, wait_fixed
 
 set_option('precision', 8)
 
@@ -33,6 +34,7 @@ class Indicator:
 
         self.setting = self.__optimize_signal(possible_setting)
 
+    @retry(wait=wait_fixed(9))
     def __fetch_ohlcv(self):
         logger.info('Fetch candlestick data')
         try:

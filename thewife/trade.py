@@ -27,7 +27,7 @@ class Trade:
         return auth.fetch_order_book(self.pair)['bids'][0][0]
 
     @property
-    @retry(wait=wait_fixed(5))
+    @retry(wait=wait_fixed(9))
     def __buy_price(self):
         auth = getattr(ccxt, self.exchange)()
         return auth.fetch_order_book(self.pair)['asks'][0][0]
