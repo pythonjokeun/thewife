@@ -74,10 +74,12 @@ def main():
                 data = indicator.indicator
                 current_indicator = data.indicator.tolist()[-1]
 
-                logger.info('Current price: ' +
-                            '{0:.8f}'.format(data.close.tolist()[-1]))
-                logger.info('Current indicator: ' +
-                            '{0:.2f}'.format(current_indicator))
+                logger.info(
+                    '[' + conf['trade']['pair'] + '] ' + 'Current price: ' +
+                    '{0:.8f}'.format(data.close.tolist()[-1]))
+                logger.info(
+                    '[' + conf['trade']['pair'] + '] ' + 'Current indicator: '
+                    + '{0:.2f}'.format(current_indicator))
 
                 if last_act == 'sell' and (current_indicator <=
                                            parameter['lower']):

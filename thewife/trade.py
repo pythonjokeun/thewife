@@ -62,8 +62,8 @@ class Trade:
             price = self.__buy_price
 
             try:
-                logger.info('Attempt to buy ' + target + ' @ ' +
-                            '{0:.8f}'.format(price) + ' ' + base)
+                logger.info('[' + self.pair + '] ' + 'Attempt to buy ' + target
+                            + ' @ ' + '{0:.8f}'.format(price) + ' ' + base)
 
                 self.__notify('Attempt to BUY ' + target + ' @ ' +
                               '{0:.8f}'.format(price) + ' ' + base)
@@ -75,17 +75,21 @@ class Trade:
                 sleep(self.refreshrate)
 
                 while True:
-                    logger.info('Check buy order status')
+                    logger.info(
+                        '[' + self.pair + '] ' + 'Check buy order status')
                     order_status = auth.fetch_order(
                         id=order['id'], symbol=order['symbol'])
 
                     remaining = order_status['remaining']
                     left = abs(left - order_status['cost'])
-                    logger.info('Remaining: ' + str(remaining))
+                    logger.info('[' + self.pair + '] ' + 'Remaining: ' +
+                                str(remaining))
 
                     if (remaining != 0.0 or remaining != 0):
-                        logger.info('Buy order was partially filled')
-                        logger.info('Cancel previous buy order')
+                        logger.info('[' + self.pair + '] ' +
+                                    'Buy order was partially filled')
+                        logger.info('[' + self.pair + '] ' +
+                                    'Cancel previous buy order')
 
                         auth.cancel_order(
                             id=order_status['id'],
@@ -93,24 +97,29 @@ class Trade:
 
                         price = self.__buy_price
 
-                        logger.info('Attempt to buy ' + target + ' @ ' +
-                                    '{0:.8f}'.format(price) + ' ' + base)
+                        logger.info(
+                            '[' + self.pair + '] ' + 'Attempt to buy ' + target
+                            + ' @ ' + '{0:.8f}'.format(price) + ' ' + base)
 
                         order = auth.create_limit_buy_order(
                             order_status['symbol'], amount(left), price)
                     elif (remaining == 0.0 or remaining == 0):
-                        logger.info('Successfully bought ' + target)
+                        logger.info('[' + self.pair + '] ' +
+                                    'Successfully bought ' + target)
                         self.__notify('Successfully bought ' + target + ' @ ' +
                                       '{0:.8f}'.format(price) + ' ' + base)
                         break
 
                     sleep(self.refreshrate)
             except (ccxt.InvalidOrder, ccxt.InsufficientFunds):
-                logger.info('Invalid order or quantity')
-                logger.info('Funds: ' + str(self.funds))
-                logger.info('Amount: ' + str(amount(self.funds)))
+                logger.info(
+                    '[' + self.pair + '] ' + 'Invalid order or quantity')
+                logger.info(
+                    '[' + self.pair + '] ' + 'Funds: ' + str(self.funds))
+                logger.info('[' + self.pair + '] ' + 'Amount: ' +
+                            str(amount(self.funds)))
         except Exception as e:
-            logger.exception(e)
+            logger.exception('[' + self.pair + '] ' + e)
 
     def sell(self):
         try:
@@ -132,8 +141,9 @@ class Trade:
             price = self.__sell_price
 
             try:
-                logger.info('Attempt to sell ' + target + ' @ ' +
-                            '{0:.8f}'.format(price) + ' ' + base)
+                logger.info(
+                    '[' + self.pair + '] ' + 'Attempt to sell ' + target +
+                    ' @ ' + '{0:.8f}'.format(price) + ' ' + base)
 
                 self.__notify('Attempt to SELL ' + target + ' @ ' +
                               '{0:.8f}'.format(price) + ' ' + base)
@@ -144,35 +154,43 @@ class Trade:
                 sleep(self.refreshrate)
 
                 while True:
-                    logger.info('Check sell order status')
+                    logger.info(
+                        '[' + self.pair + '] ' + 'Check sell order status')
                     order_id = order['info']['orderId']
                     order_status = auth.fetch_order(
                         id=order_id, symbol=self.pair)
 
                     remaining = order_status['remaining']
-                    logger.info('Remaining: ' + str(remaining))
+                    logger.info('[' + self.pair + '] ' + 'Remaining: ' +
+                                str(remaining))
 
                     if remaining != 0.0 or remaining != 0:
-                        logger.info('Sell order was partially filled')
-                        logger.info('Cancel previous sell order')
+                        logger.info('[' + self.pair + '] ' +
+                                    'Sell order was partially filled')
+                        logger.info('[' + self.pair + '] ' +
+                                    'Cancel previous sell order')
                         auth.cancel_order(id=order_id, symbol=self.pair)
 
                         price = self.__sell_price
 
-                        logger.info('Attempt to sell ' + target + ' @ ' +
+                        logger.info('[' + self.pair + '] ' +
+                                    'Attempt to sell ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
 
                         order = auth.create_limit_sell_order(
                             self.pair, balance(), price)
                     elif remaining == 0.0 or remaining == 0:
-                        logger.info('Successfully sold ' + target)
+                        logger.info('[' + self.pair + '] ' +
+                                    'Successfully sold ' + target)
                         self.__notify('Successfully sold ' + target + ' @ ' +
                                       '{0:.8f}'.format(price) + ' ' + base)
                         break
 
                     sleep(self.refreshrate)
             except (ccxt.InvalidOrder, ccxt.InsufficientFunds):
-                logger.info('Invalid order or quantity')
-                logger.info('Balance: ' + str(balance()))
+                logger.info(
+                    '[' + self.pair + '] ' + 'Invalid order or quantity')
+                logger.info(
+                    '[' + self.pair + '] ' + 'Balance: ' + str(balance()))
         except Exception as e:
-            logger.exception(e)
+            logger.exception('[' + self.pair + '] ' + e)

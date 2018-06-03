@@ -36,7 +36,7 @@ class Indicator:
 
     @retry(wait=wait_fixed(9))
     def __fetch_ohlcv(self):
-        logger.info('Fetch candlestick data')
+        logger.info('[' + self.pair + '] ' + 'Fetch candlestick data')
         try:
             result = getattr(ccxt, self.exchange)().fetch_ohlcv(
                 symbol=self.pair, timeframe=self.interval, limit=self.history)
@@ -67,7 +67,7 @@ class Indicator:
 
             return result
         except Exception as e:
-            logger.exception(e)
+            logger.exception('[' + self.pair + '] ' + e)
 
     def __compute_indicator(self, period, lower, upper):
         try:
@@ -78,18 +78,22 @@ class Indicator:
 
             return data
         except Exception as e:
-            logger.exception(e)
+            logger.exception('[' + self.pair + '] ' + e)
 
     def __optimize_signal(self, possibilities):
-        logger.info('Optimize indicator parameters')
+        logger.info('[' + self.pair + '] ' + 'Optimize indicator parameters')
         try:
 
             def compute_profit(params):
                 if self.verbose == 1:
-                    logger.info('Indicator parameter:')
-                    logger.info('\tPeriod: ' + str(params['period']))
-                    logger.info('\tLower threshold: ' + str(params['lower']))
-                    logger.info('\tUpper threshold: ' + str(params['upper']))
+                    logger.info(
+                        '[' + self.pair + '] ' + 'Indicator parameter:')
+                    logger.info('[' + self.pair + '] ' + '\tPeriod: ' +
+                                str(params['period']))
+                    logger.info('[' + self.pair + '] ' +
+                                '\tLower threshold: ' + str(params['lower']))
+                    logger.info('[' + self.pair + '] ' +
+                                '\tUpper threshold: ' + str(params['upper']))
                 else:
                     pass
 
@@ -171,15 +175,19 @@ class Indicator:
             profit = '{0:.1f}'.format(profit)
             result = {'parameter': params, 'profit': profit}
 
-            logger.info('Parameter optimization result:')
-            logger.info('\tPeriod: ' + str(params['period']))
-            logger.info('\tUpper threshold: ' + str(params['upper']))
-            logger.info('\tLower threshold: ' + str(params['lower']))
-            logger.info('\tProfit: ' + profit + ' %')
+            logger.info(
+                '[' + self.pair + '] ' + 'Parameter optimization result:')
+            logger.info(
+                '[' + self.pair + '] ' + '\tPeriod: ' + str(params['period']))
+            logger.info('[' + self.pair + '] ' + '\tUpper threshold: ' +
+                        str(params['upper']))
+            logger.info('[' + self.pair + '] ' + '\tLower threshold: ' +
+                        str(params['lower']))
+            logger.info('[' + self.pair + '] ' + '\tProfit: ' + profit + ' %')
 
             return result
         except Exception as e:
-            logger.exception(e)
+            logger.exception('[' + self.pair + '] ' + e)
 
     @property
     def indicator(self):
