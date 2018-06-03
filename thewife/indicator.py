@@ -28,8 +28,8 @@ class Indicator:
 
         possible_setting = {
             'period': range(2, 15),
-            'lower': range(2, 51),
-            'upper': range(51, 101)
+            'lower': range(20, 51),
+            'upper': range(51, 81)
         }
 
         self.setting = self.__optimize_signal(possible_setting)
