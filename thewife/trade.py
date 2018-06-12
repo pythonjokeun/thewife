@@ -21,40 +21,57 @@ class Trade:
         self.__pushbullet = get_notifier('pushbullet')
 
     @property
-    @retry(wait=wait_fixed(5))
-    def __sell_price(self):
+    @retry(wait=wait_fixed(3))
+    def __auth(self):
         auth = getattr(ccxt, self.exchange)()
-        return auth.fetch_order_book(self.pair)['asks'][0][0]
+        auth.apiKey = self.apikey
+        auth.secret = self.apisec
+        auth.adjustForTimeDifference = True
+        auth.recvWindow = 10000000
+
+        # Initialize markets data
+        auth.load_markets()
+
+        return auth
 
     @property
-    @retry(wait=wait_fixed(9))
+    @retry(wait=wait_fixed(3))
+    def __market(self):
+        return self.__auth.load_markets()[self.pair]
+
+    @property
+    @retry(wait=wait_fixed(3))
+    def __sell_price(self):
+        min_price = self.__market['limits']['price']['min']
+        precision = self.__market['precision']['price']
+        top_price = self.__auth.fetch_order_book(self.pair)['asks'][0][0]
+
+        return round(top_price - min_price, precision)
+
+    @property
+    @retry(wait=wait_fixed(3))
     def __buy_price(self):
-        auth = getattr(ccxt, self.exchange)()
-        return auth.fetch_order_book(self.pair)['bids'][0][0]
+        min_price = self.__market['limits']['price']['min']
+        precision = self.__market['precision']['price']
+        top_price = self.__auth.fetch_order_book(self.pair)['bids'][0][0]
+
+        return round(top_price + min_price, precision)
 
     def __notify(self, message):
         return self.__pushbullet.notify(message=message, token=self.pbtoken)
 
     def buy(self):
         try:
-            auth = getattr(ccxt, self.exchange)()
-            auth.apiKey = self.apikey
-            auth.secret = self.apisec
-            auth.adjustForTimeDifference = True
-            auth.recvWindow = 10000000
-
-            market = auth.load_markets()
-            market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
 
             def amount(x):
                 if x <= 0:
-                    bal = auth.fetch_free_balance()
+                    bal = self.__auth.fetch_free_balance()
                     x = bal[base]
 
                 amount_target = x / price
-                amount_target = auth.amount_to_precision(
+                amount_target = self.__auth.amount_to_precision(
                     self.pair, amount_target)
 
                 return amount_target
@@ -69,15 +86,15 @@ class Trade:
                               '{0:.8f}'.format(price) + ' ' + base)
 
                 left = self.funds
-                order = auth.create_limit_buy_order(self.pair,
-                                                    amount(self.funds), price)
+                order = self.__auth.create_limit_buy_order(
+                    self.pair, amount(self.funds), price)
 
                 sleep(self.refreshrate)
 
                 while True:
                     logger.info(
                         '[' + self.pair + '] ' + 'Check buy order status')
-                    order_status = auth.fetch_order(
+                    order_status = self.__auth.fetch_order(
                         id=order['id'], symbol=order['symbol'])
 
                     remaining = order_status['remaining']
@@ -91,7 +108,7 @@ class Trade:
                         logger.info('[' + self.pair + '] ' +
                                     'Cancel previous buy order')
 
-                        auth.cancel_order(
+                        self.__auth.cancel_order(
                             id=order_status['id'],
                             symbol=order_status['symbol'])
 
@@ -101,7 +118,7 @@ class Trade:
                             '[' + self.pair + '] ' + 'Attempt to buy ' + target
                             + ' @ ' + '{0:.8f}'.format(price) + ' ' + base)
 
-                        order = auth.create_limit_buy_order(
+                        order = self.__auth.create_limit_buy_order(
                             order_status['symbol'], amount(left), price)
                     elif (remaining == 0.0 or remaining == 0):
                         logger.info('[' + self.pair + '] ' +
@@ -123,20 +140,12 @@ class Trade:
 
     def sell(self):
         try:
-            auth = getattr(ccxt, self.exchange)()
-            auth.apiKey = self.apikey
-            auth.secret = self.apisec
-            auth.adjustForTimeDifference = True
-            auth.recvWindow = 10000000
-
-            market = auth.load_markets()
-            market = market[self.pair]
             target = self.pair.split('/')[0]
             base = self.pair.split('/')[1]
 
             def balance():
-                bal = auth.fetch_free_balance()
-                return auth.amount_to_precision(self.pair, bal[target])
+                bal = self.__auth.fetch_free_balance()
+                return self.__auth.amount_to_precision(self.pair, bal[target])
 
             price = self.__sell_price
 
@@ -148,8 +157,8 @@ class Trade:
                 self.__notify('Attempt to SELL ' + target + ' @ ' +
                               '{0:.8f}'.format(price) + ' ' + base)
 
-                order = auth.create_limit_sell_order(self.pair, balance(),
-                                                     price)
+                order = self.__auth.create_limit_sell_order(
+                    self.pair, balance(), price)
 
                 sleep(self.refreshrate)
 
@@ -157,7 +166,7 @@ class Trade:
                     logger.info(
                         '[' + self.pair + '] ' + 'Check sell order status')
                     order_id = order['info']['orderId']
-                    order_status = auth.fetch_order(
+                    order_status = self.__auth.fetch_order(
                         id=order_id, symbol=self.pair)
 
                     remaining = order_status['remaining']
@@ -169,7 +178,7 @@ class Trade:
                                     'Sell order was partially filled')
                         logger.info('[' + self.pair + '] ' +
                                     'Cancel previous sell order')
-                        auth.cancel_order(id=order_id, symbol=self.pair)
+                        self.__auth.cancel_order(id=order_id, symbol=self.pair)
 
                         price = self.__sell_price
 
@@ -177,7 +186,7 @@ class Trade:
                                     'Attempt to sell ' + target + ' @ ' +
                                     '{0:.8f}'.format(price) + ' ' + base)
 
-                        order = auth.create_limit_sell_order(
+                        order = self.__auth.create_limit_sell_order(
                             self.pair, balance(), price)
                     elif remaining == 0.0 or remaining == 0:
                         logger.info('[' + self.pair + '] ' +
