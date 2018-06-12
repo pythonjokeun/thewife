@@ -24,13 +24,13 @@ class Trade:
     @retry(wait=wait_fixed(5))
     def __sell_price(self):
         auth = getattr(ccxt, self.exchange)()
-        return auth.fetch_order_book(self.pair)['bids'][0][0]
+        return auth.fetch_order_book(self.pair)['asks'][0][0]
 
     @property
     @retry(wait=wait_fixed(9))
     def __buy_price(self):
         auth = getattr(ccxt, self.exchange)()
-        return auth.fetch_order_book(self.pair)['asks'][0][0]
+        return auth.fetch_order_book(self.pair)['bids'][0][0]
 
     def __notify(self, message):
         return self.__pushbullet.notify(message=message, token=self.pbtoken)
