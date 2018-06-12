@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='thewife',
-    version='0.1.2-MFI',
+    version='0.1.3-MFI',
     description='Trading bot that reacts to optimized RSI indicator',
     packages=['thewife'],
     install_requires=[
