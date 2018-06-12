@@ -46,7 +46,7 @@ class Indicator:
                 result = int(result)
                 return dt.fromtimestamp(result).strftime('%Y-%m-%d %H:%M:%S')
 
-            result = df.from_dict({
+            ohlcv = df.from_dict({
                 'time':
                 list(map(lambda c: totime(c[0]), result)),
                 'open':
@@ -61,9 +61,37 @@ class Indicator:
                 list(map(lambda c: float(c[5]), result))
             })
 
-            result = result.loc[:, [
-                'time', 'open', 'high', 'low', 'close', 'volume'
-            ]]
+            ohlcv_copy = ohlcv.copy()
+
+            ohlcv_copy.loc[:, 'ha_close'] = (
+                ohlcv_copy.loc[:, 'open'] + ohlcv_copy.loc[:, 'high'] +
+                ohlcv_copy.loc[:, 'low'] + ohlcv_copy.loc[:, 'close']) / 4
+
+            ohlcv_copy.loc[:, 'ha_open'] = (ohlcv_copy.loc[:, 'open'].shift(
+                1) + ohlcv_copy.loc[:, 'close'].shift(1)) / 2
+
+            ohlcv_copy.loc[:1, 'ha_open'] = ohlcv_copy.loc[:, 'open'].values[0]
+
+            ohlcv_copy.loc[1:, 'ha_open'] = (
+                (ohlcv_copy.loc[:, 'ha_open'].shift(1) +
+                 ohlcv_copy.loc[:, 'ha_close'].shift(1)) / 2)[1:]
+
+            ohlcv_copy.loc[:, 'ha_high'] = ohlcv_copy.loc[:, [
+                'high', 'ha_open', 'ha_close'
+            ]].max(axis=1)
+
+            ohlcv_copy.loc[:, 'ha_low'] = ohlcv_copy.loc[:, [
+                'low', 'ha_open', 'ha_close'
+            ]].min(axis=1)
+
+            result = df.from_dict({
+                'time': ohlcv_copy.loc[:, 'time'],
+                'open': ohlcv_copy.loc[:, 'ha_open'],
+                'high': ohlcv_copy.loc[:, 'ha_high'],
+                'low': ohlcv_copy.loc[:, 'ha_low'],
+                'close': ohlcv_copy.loc[:, 'ha_close'],
+                'volume': ohlcv_copy.loc[:, 'volume']
+            })
 
             return result
         except Exception as e:
