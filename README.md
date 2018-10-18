@@ -14,7 +14,7 @@
 
 ## Installation
 
-`pip install git+https://github.com/iamsniffles/thewife`
+`pip install git+https://github.com/pythonjokeun/thewife`
 
 ## Usage
 
