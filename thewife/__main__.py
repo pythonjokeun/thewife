@@ -87,8 +87,6 @@ def main():
                                             parameter['upper']):
                     trade.sell()
                     break
-                else:
-                    pass
     except KeyboardInterrupt:
         quit()
 
