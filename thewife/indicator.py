@@ -89,9 +89,6 @@ class Indicator:
                     logger.info('\tPeriod: ' + str(params['period']))
                     logger.info('\tLower threshold: ' + str(params['lower']))
                     logger.info('\tUpper threshold: ' + str(params['upper']))
-                else:
-                    pass
-
                 data = self.__compute_indicator(
                     period=params['period'],
                     lower=params['lower'],
@@ -185,10 +182,8 @@ class Indicator:
         # refresh candlestick
         self.ohlcv = self.__fetch_ohlcv()
 
-        # compute signal with best parameter
-        data = self.__compute_indicator(
+        return self.__compute_indicator(
             period=self.setting['parameter']['period'],
             lower=self.setting['parameter']['lower'],
-            upper=self.setting['parameter']['upper'])
-
-        return data
+            upper=self.setting['parameter']['upper'],
+        )
